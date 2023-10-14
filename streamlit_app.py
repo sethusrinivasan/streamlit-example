@@ -1,23 +1,25 @@
 import streamlit as st
-import time
 import numpy as np
+import matplotlib.pyplot as plt
 
-progress_bar = st.sidebar.progress(0)
-status_text = st.sidebar.empty()
-last_rows = np.random.randn(1, 1)
-chart = st.line_chart(last_rows)
-for i in range(1, 101):
-    new_rows = last_rows[-1, :] + np.random.randn(5, 1).cumsum(axis=0)
+st.title('Illustrating the Central Limit Theorem with Streamlit')
+st.subheader('An App by Tyler Richards')
 
-status_text.text("%i%% Complete" % i)
+st.write(('This app simulates a thousand coin flips using the chance of heads input below,'
+    'and then samples with replacement from that population and plots the histogram of the'
+    ' means of the samples in order to illustrate the central limit theorem!'))
 
-chart.add_rows(new_rows)
-progress_bar.progress(i)
-last_rows = new_rows
-time.sleep(0.05)
-progress_bar.empty()
+perc_heads = st.number_input(
+label='Chance of Coins Landing on Heads', min_value=0.0, max_value=1.0, value=.5)
 
-# Streamlit widgets automatically run the script from top to bottom. Since
-# this button is not connected to any other logic, it just causes a plain
-# rerun.
-st.button("Re-run")
+binom_dist = np.random.binomial(1, perc_heads, 1000)
+
+list_of_means = []
+for i in range(0, 1000):
+    list_of_means.append(np.random.choice(
+    binom_dist, 100, replace=True).mean())
+
+fig, ax = plt.subplots()
+ax = plt.hist(list_of_means)
+
+st.pyplot(fig)
